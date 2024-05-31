@@ -1,26 +1,24 @@
 #!/usr/bin/node
-const axios = require('axios');
 
-if (process.argv.length !== 3) {
-    console.log("Usage: node script.js <API_URL>");
-    process.exit(1);
-}
+const request = require('request');
 
-const apiUrl = process.argv[2];
+const url = process.argv[2];
 
-axios.get(apiUrl)
-    .then(response => {
-        const completedTasks = {};
-        response.data.forEach(todo => {
-            if (todo.completed) {
-                completedTasks[todo.userId] = (completedTasks[todo.userId] || 0) + 1;
-            }
-        });
-        console.log("Number of completed tasks by user id:");
-        Object.entries(completedTasks).forEach(([userId, numCompletedTasks]) => {
-            console.log(`User ID: ${userId}, Completed Tasks: ${numCompletedTasks}`);
-        });
-    })
-    .catch(error => {
-        console.error("Error: Failed to retrieve data.", error.message);
-    });
+request.get(url, function (err, response, body) {
+  if (err) {
+    console.log('error:', err);
+  } else {
+    const obj = JSON.parse(body);
+    const tasks = {};
+    for (const task of obj) {
+      if (task.completed === true) {
+        if (tasks[task.userId] === undefined) {
+          tasks[task.userId] = 1;
+        } else {
+          tasks[task.userId] += 1;
+        }
+      }
+    }
+    console.log(tasks);
+  }
+});
